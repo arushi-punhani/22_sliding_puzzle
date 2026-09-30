@@ -5,15 +5,15 @@ from puzzle import Puzzle
 class SlidingPuzzle:
 
     def __init__(self, size=None):
-        # Allow choosing size at startup, falling back to 4x4
         self.size = size if size is not None else self.choose_size()
-        self.puzzle = Puzzle(self.size)
         self.moves = 0
         self.started = time.monotonic()
+        self.is_completed = False
+        self.puzzle = Puzzle(self.size)
 
     def choose_size(self):
         while True:
-            print("Choose puzzle size:")
+            print("\nChoose puzzle size:")
             print("1. 3x3")
             print("2. 4x4")
             print("3. 5x5")
@@ -28,6 +28,13 @@ class SlidingPuzzle:
                 return 5
             else:
                 print("Please choose 1, 2, or 3.")
+
+    def reset_board(self, new_size=None):
+        """Recreates board while preserving session timer and move tracking."""
+        if new_size is not None:
+            self.size = new_size
+        self.puzzle = Puzzle(self.size)
+        self.is_completed = False
 
     def display(self):
         print()
@@ -45,23 +52,41 @@ class SlidingPuzzle:
         print(
             "Sliding Puzzle — W/A/S/D moves the tile into the blank. Q quits."
         )
+
         while True:
             self.display()
+
+            # Detect solved state
             if self.puzzle.solved():
-                print("Solved!")
-                return
+                self.is_completed = True
+                print("\nSolved! Game complete.")
+                print("Options: [Q]uit | [R]eset board")
+
+                # Freeze lifecycle: commands cannot alter board state post-completion
+                while True:
+                    key = input("> ").strip().lower()
+                    if key == "q":
+                        return
+                    elif key == "r":
+                        self.reset_board()
+                        break
+                    else:
+                        print("Puzzle is solved! Press Q to quit or R to reset.")
+                continue
+
             key = input("> ").strip().lower()
+
             if key == "q":
                 return
+
             if not key or key not in ("w", "a", "s", "d"):
                 print("Use W/A/S/D.")
                 continue
+
+            # Task 4: Only increment move counter if tile actually moved
             if self.puzzle.move(key):
                 self.moves += 1
             else:
                 print("That move is not possible.")
 
 
-if __name__ == "__main__":
-    game = SlidingPuzzle()
-    game.run()

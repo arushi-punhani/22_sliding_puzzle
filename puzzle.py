@@ -9,25 +9,40 @@ class Puzzle:
 
     def make_board(self):
         tiles = list(range(1, self.size * self.size)) + [0]
-
-        # Build initial solved grid
-        board = [
+        self.board = [
             tiles[r * self.size : (r + 1) * self.size] for r in range(self.size)
         ]
 
-        # Temporarily assign board so self.blank_pos() and self.move() work
-        self.board = board
+        # Scramble using legal blank moves
+        moves_count = self.size * self.size * 20
+        for _ in range(moves_count):
+            r, c = self.blank_pos()
+            valid_dirs = []
+            if r > 0:
+                valid_dirs.append("w")
+            if r < self.size - 1:
+                valid_dirs.append("s")
+            if c > 0:
+                valid_dirs.append("a")
+            if c < self.size - 1:
+                valid_dirs.append("d")
 
-        # Scramble using only legal blank moves
-        for _ in range(self.size * self.size * 10):
-            direction = random.choice(["w", "a", "s", "d"])
-            self.move(direction)
+            self.move(random.choice(valid_dirs))
 
-        # Avoid starting in the solved state
+        # Ensure board isn't already solved
         while self.solved():
-            for _ in range(self.size * self.size * 10):
-                direction = random.choice(["w", "a", "s", "d"])
-                self.move(direction)
+            r, c = self.blank_pos()
+            valid_dirs = []
+            if r > 0:
+                valid_dirs.append("w")
+            if r < self.size - 1:
+                valid_dirs.append("s")
+            if c > 0:
+                valid_dirs.append("a")
+            if c < self.size - 1:
+                valid_dirs.append("d")
+
+            self.move(random.choice(valid_dirs))
 
         return self.board
 
